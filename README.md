@@ -165,14 +165,14 @@ I welcome pull requests with new indicators or fixes for existing ones.
 Please submit only indicators that belong in public domain and are
 royalty free.
 
-## Contributing
+## Contribuciones   
 
-1. Fork it (https://github.com/peerchemist/finta/fork)
-2. Study how it's implemented.
-3. Create your feature branch (`git checkout -b my-new-feature`).
-4. Run [black](https://github.com/ambv/black) code formatter on the finta.py to ensure uniform code style.
-5. Commit your changes (`git commit -am 'Add some feature'`).
-6. Push to the branch (`git push origin my-new-feature`).
-7. Create a new Pull Request.
+1. Realiza un Fork (https://github.com/peerchemist/finta/fork)
+2. Estudia cómo se implementa el algoritmo.
+3. Crea tu rama de características (my-new-feature) (`git checkout -b my-new-feature`).
+4. Corre el formateador de código [black](https://github.com/ambv/black) sobre el finta.py para asegurar un estilo de código uniforme.
+5. Haz Commit a tus cambios (`git commit -am 'Add some feature'`).
+6. Haz Push a la rama (`git push origin my-new-feature`).
+7. Crea una nueva Pull Request.
 
 ------------------------------------------------------------------------
