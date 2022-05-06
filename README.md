@@ -168,7 +168,7 @@ royalty free.
 ## Contribuciones   
 
 1. Realiza un Fork (https://github.com/peerchemist/finta/fork)
-2. Studia cómo se implementa.
+2. Estudia cómo se implementa el algoritmo.
 3. Crea tu rama de características (my-new-feature) (`git checkout -b my-new-feature`).
 4. Corre el formateador de código [black](https://github.com/ambv/black) sobre el finta.py para asegurar un estilo de código uniforme.
 5. Haz Commit a tus cambios (`git commit -am 'Add some feature'`).
