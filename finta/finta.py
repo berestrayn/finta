@@ -926,8 +926,8 @@ class TA:
                 psarbear[i] = psar[i]
 
         psar = pd.Series(psar, name="psar", index=ohlc.index)
-        psarbear = pd.Series(psarbull, name="psarbull", index=ohlc.index)
-        psarbull = pd.Series(psarbear, name="psarbear", index=ohlc.index)
+        psarbear = pd.Series(psarbull, name="psarbear", index=ohlc.index)
+        psarbull = pd.Series(psarbear, name="psarbull", index=ohlc.index)
 
         return pd.concat([psar, psarbull, psarbear], axis=1)
 
@@ -1493,11 +1493,14 @@ class TA:
 
         neg_change = ohlcv[column] < ohlcv[column].shift(1)
         pos_change = ohlcv[column] >= ohlcv[column].shift(1)
-
+        no_change = ohlcv[column] == ohlcv[column].shift(1)
+        
         if pos_change.any():
             ohlcv.loc[pos_change, "OBV"] = ohlcv["volume"]
         if neg_change.any():
             ohlcv.loc[neg_change, "OBV"] = -ohlcv["volume"]
+        if no_change.any():
+            ohlcv.loc[no_change, "OBV"] = ohlcv["OBV"].shift(1)
 
         return pd.Series(ohlcv["OBV"].cumsum(), name="OBV")
 
@@ -1802,8 +1805,8 @@ class TA:
     def WTO(
         cls,
         ohlc: DataFrame,
-        channel_lenght: int = 10,
-        average_lenght: int = 21,
+        channel_length: int = 10,
+        average_length: int = 21,
         adjust: bool = True,
     ) -> DataFrame:
         """
@@ -1812,13 +1815,13 @@ class TA:
         """
 
         ap = cls.TP(ohlc)
-        esa = ap.ewm(span=channel_lenght, adjust=adjust).mean()
+        esa = ap.ewm(span=average_length, adjust=adjust).mean()
         d = pd.Series(
-            (ap - esa).abs().ewm(span=channel_lenght, adjust=adjust).mean(), name="d"
+            (ap - esa).abs().ewm(span=channel_length, adjust=adjust).mean(), name="d"
         )
         ci = (ap - esa) / (0.015 * d)
 
-        wt1 = pd.Series(ci.ewm(span=average_lenght, adjust=adjust).mean(), name="WT1.")
+        wt1 = pd.Series(ci.ewm(span=average_length, adjust=adjust).mean(), name="WT1.")
         wt2 = pd.Series(wt1.rolling(window=4).mean(), name="WT2.")
 
         return pd.concat([wt1, wt2], axis=1)
@@ -2254,6 +2257,50 @@ class TA:
         value_chart_open = pd.Series((ohlc.open - float_axis) / vol_unit, name="Value Chart Open")
 
         return pd.concat([value_chart_high, value_chart_low, value_chart_close, value_chart_open], axis=1)
+
+    @classmethod
+    def WAVEPM(
+        cls,
+        ohlc: DataFrame,
+        period: int = 14,
+        lookback_period: int = 100,
+        column: str = "close"
+    ) -> Series:
+        """
+        The Wave PM (Whistler Active Volatility Energy Price Mass) indicator is an oscillator described in the Mark
+        Whistler’s book “Volatility Illuminated”.
+
+        :param DataFrame ohlc: data
+        :param int period: period for moving average
+        :param int lookback_period: period for oscillator lookback
+        :return Series: WAVE PM
+        """
+
+        ma = ohlc[column].rolling(window=period).mean()
+        std = ohlc[column].rolling(window=period).std(ddof=0)
+
+        def tanh(x):
+            two = np.where(x > 0, -2, 2)
+            what = two * x
+            ex = np.exp(what)
+            j = 1 - ex
+            k = ex - 1
+            l = np.where(x > 0, j, k)
+            output = l / (1 + ex)
+            return output
+
+        def osc(input_dev, mean, power):
+            variance = Series(power).rolling(window=lookback_period).sum() / lookback_period
+            calc_dev = np.sqrt(variance) * mean
+            y = (input_dev / calc_dev)
+            oscLine = tanh(y)
+            return oscLine
+
+        dev = 3.2 * std
+        power = np.power(dev / ma, 2)
+        wavepm = osc(dev, ma, power)
+
+        return pd.Series(wavepm, name="{0} period WAVEPM".format(period))
 
 
 if __name__ == "__main__":
